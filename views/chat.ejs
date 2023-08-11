@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index</title>
+    <link rel="stylesheet" href="./styles/normalize.css" />
+    <link rel="stylesheet" href="./bootstrap.css" />
+    <link rel="stylesheet" href="./styles/style.css" />
+    <script src="./socket.js"></script>
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+  </head>
+  <body>
+    <div class="container main">
+      <div class="title">聊天室</div>
+      <div class="current-roomId-box">
+        目前房間名稱 : <span class="current-roomId"></span>
+      </div>
+      <div class="nickname-box">
+        你的暱稱：<span class="nickname"><%= nickname %></span>
+      </div>
+      <form class="roomId-form">
+        <label for="roomId" class="roomId">創建房間名稱：</label>
+        <input type="text" class="input-roomId" name="roomId" />
+        <div class="btn btn-primary create-room" onclick="create_room()">
+          創建房間
+        </div>
+      </form>
+      <label for="join-roomId">進入房間名稱 : </label>
+      <input type="text" class="input-join-roomId" />
+      <div class="btn btn-secondary join-room" onclick="join_room()">
+        進入房間
+      </div>
+      <div class="btn btn-alert" onclick="leave_room()">離開房間</div>
+      <hr />
+      <div class="row">
+        <div class="col-8 chat-box">
+          <div class="system-msg"></div>
+        </div>
+
+        <div class="col-2 room-people-box">
+          room Users -
+          <div class="room-people"></div>
+        </div>
+        <div class="col-2 online-people-box">
+          online Users -
+          <div class="online-people"></div>
+        </div>
+      </div>
+      <div class="input-msg-box col-8">
+        <form class="input-msg-form">
+          <input type="text" placeholder="請輸入訊息" class="input-msg" />
+          <button type="submit" onclick="send()">送出</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      /* -------------------- *\
+          Socket.io functions
+      \* -------------------- */
+
+      const socket = io();
+      socket.on("connect", function () {
+        setInterval(online_name, 1000);
+        let nickname = document.querySelector(".nickname").innerText;
+        console.log("Socket connected");
+        appendSystemMsg("Socket connected , your id is " + socket.id);
+        socket.emit("connect-socket", socket.id, nickname);
+      });
+
+      /* room events*/
+
+      socket.on("room-already-exists", function (reason) {
+        appendSystemMsg(reason);
+      });
+
+      socket.on("room-created", function (roomId, userId) {
+        let current_roomId = document.querySelector(".current-roomId");
+        let nickname = document.querySelector(".nickname").innerText;
+        current_roomId.innerText = roomId;
+        appendSystemMsg(nickname + " 已創立房間名稱為 " + roomId);
+      });
+
+      socket.on("got-online-people", function (userData) {
+        console.log("---------got---------");
+        console.log(userData);
+        console.log("---------got---------");
+        let online_people = document.querySelector(".online-people");
+        let nickname = document.querySelector(".nickname").innerText;
+        while (online_people.firstChild) {
+          online_people.removeChild(online_people.firstChild);
+        }
+
+        // console.log(id);
+        for (let i = 0; i < userData.length; i++) {
+          let new_member = document.createElement("p");
+          new_member.innerText =
+            userData[i].userId.substr(0, 5) + "(" + userData[i].nickname + ")";
+          online_people.appendChild(new_member);
+        }
+      });
+
+      socket.on("got-room-people", function (room_data) {
+        let room_people = document.querySelector(".room-people");
+        while (room_people.firstChild) {
+          room_people.removeChild(room_people.firstChild);
+        }
+
+        for (let i = 0; i < room_data.length; i++) {
+          let newEle = document.createElement("p");
+          newEle.innerText = room_data[i].substr(0, 5);
+          room_people.appendChild(newEle);
+        }
+      });
+
+      socket.on("joined-room", function (roomId, userId) {
+        let current_roomId = document.querySelector(".current-roomId");
+        current_roomId.innerText = roomId;
+        appendSystemMsg(userId + '已加入房間"' + roomId + '"');
+      });
+
+      socket.on("leaved-room", function () {
+        let current_roomId = document.querySelector(".current-roomId");
+        current_roomId.innerText = "";
+      });
+
+      socket.on("room-not-found", function (roomId) {
+        console.log("room-not-found");
+        appendSystemMsg('沒有"' + roomId + '"此房間');
+      });
+
+      socket.on("not-leave-room", function (reason) {
+        appendSystemMsg(reason);
+      });
+
+      socket.on("sent-msg", function (msg, userId, nickname) {
+        appendSystemMsg(
+          nickname + "(" + userId.substr(0, 5) + ") says : " + msg
+        );
+      });
+
+      /* -------------------- *\
+          Utility functions
+      \* -------------------- */
+
+      function appendSystemMsg(msg) {
+        const systemMsg = document.querySelector(".system-msg");
+        const newMsg = document.createElement("p");
+        newMsg.innerText = msg;
+        systemMsg.appendChild(newMsg);
+      }
+
+      function create_room() {
+        let input_roomId = document.querySelector(".input-roomId").value;
+
+        console.log(input_roomId);
+
+        socket.emit("create-room", input_roomId, socket.id, socket.nickname);
+      }
+
+      function join_room() {
+        let input_join_roomId =
+          document.querySelector(".input-join-roomId").value;
+        socket.emit("join-room", input_join_roomId, socket.id);
+      }
+
+      function leave_room() {
+        let current_roomId =
+          document.querySelector(".current-roomId").innerText;
+        socket.emit("leave-room", current_roomId, socket.id);
+      }
+
+      function send(e) {
+        let input_msg_form = document.querySelector(".input-msg-form");
+        input_msg_form.addEventListener("submit", function (e) {
+          e.preventDefault();
+        });
+        let nickname = document.querySelector(".nickname").innerText;
+        let input_msg = document.querySelector(".input-msg").value;
+        let current_roomId =
+          document.querySelector(".current-roomId").innerText;
+
+        socket.emit("send-msg", input_msg, socket.id, current_roomId, nickname);
+      }
+
+      function online_name() {
+        socket.emit("get-online-people");
+      }
+
+      function room_people() {
+        let current_roomId =
+          document.querySelector(".current-roomId").innerText;
+        socket.emit("get-room-people", current_roomId);
+      }
+      /* 暫時用setInterval useEffect */
+      setInterval(online_name, 5000);
+      setInterval(room_people, 1000);
+    </script>
+  </body>
+</html>

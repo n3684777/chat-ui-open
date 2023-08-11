@@ -1,0 +1,173 @@
+/* -------------------------- *\
+            Global
+\* -------------------------- */
+
+* {
+  position: relative;
+  box-sizing: border-box;
+}
+
+body {
+  font-size: 16px;
+  font-family: "微軟正黑體", "arial";
+  font-weight: 600;
+}
+
+a {
+  text-decoration: none;
+  color: "blue";
+}
+
+ul,
+li {
+  padding: 0;
+
+  list-style-type: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  padding: 0;
+  margin: 0;
+}
+/* -------------------------- *\
+            Layout
+\* -------------------------- */
+
+.container {
+  width: 800px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* -------------------------- *\
+            Utility
+\* -------------------------- */
+
+/* -------------------------- *\
+            Components
+\* -------------------------- */
+
+/* main */
+.main {
+  padding-top: 100px;
+}
+
+$msg__box-height: 400px;
+$msg__chat-height: 200px;
+$msg__system-height: calc($msg__box-height - $msg__chat-height);
+
+.online-person {
+  height: $msg__box-height;
+}
+
+/* title */
+.title {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 32px;
+}
+
+/* create room */
+
+.roomId-form {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+
+  .roomId {
+    text-align: center;
+    // margin-right: 16px;
+  }
+
+  .input-roomId {
+    width: 50px;
+    margin-right: 16px;
+  }
+}
+
+/* join room */
+
+.input-join-roomId {
+  width: 50px;
+  margin-right: 16px;
+}
+
+/* systemMsg */
+.system-msg {
+  text-align: center;
+  height: $msg__system-height;
+  font-weight: 1000;
+  border: 1px solid black;
+  overflow: auto;
+}
+
+/* chatBox */
+
+.chat-box {
+  height: $msg__chat-height;
+  // background-color: green;
+}
+
+/* btn */
+.btn {
+  /* btn structure */
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  min-width: 50px;
+  transition: 0.3s all;
+  border-bottom: 0px solid black;
+  text-align: center;
+  font-weight: 800;
+  font-size: 24px;
+
+  /* btn style */
+
+  border: 1px solid black;
+  background-color: gray;
+  color: black;
+
+  &:hover {
+    border-bottom: 5px solid black;
+    transform: translate(0, -5px);
+  }
+  &:active {
+    border-bottom: 0px solid black;
+    transform: translate(0, 0px);
+  }
+
+  /* interaction */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background-color: gold;
+  color: gray;
+  border: 1px solid gold;
+}
+.btn-secondary {
+  background-color: gray;
+  border: 1px solid gray;
+  color: orange;
+}
+
+.btn-alert {
+  background-color: red;
+  border: 1px solid red;
+  color: black;
+}
