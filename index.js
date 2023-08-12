@@ -104,6 +104,12 @@ io.on("connection", (socket) => {
       socket.emit("room-not-found", roomId);
       return;
     }
+    for (let i = 0; i < userData.length; i++) {
+      if (userData[i].userId === userId && userData[i].roomId) {
+        socket.emit("cant-create-room", "進入房間後，不可創建房間");
+        return;
+      }
+    }
     console.log("join-room");
     socket.join(roomId);
     for (let i = 0; i < userData.length; i++) {

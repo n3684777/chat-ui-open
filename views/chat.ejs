@@ -187,8 +187,7 @@
         }
 
         _temp.forEach((_roomId) => {
-          console.log(_roomId);
-          let newEle = document.createElement("p");
+          let newEle = document.createElement("div");
           let newEle_button = document.createElement("button");
           newEle.innerText = _roomId;
           newEle.className = "col-4";
@@ -198,6 +197,16 @@
           newEle.style.justifyContent = "center";
           newEle.style.alignItems = "center";
           newEle_button.innerText = "加入房間";
+
+          function button_onClick(e) {
+            let roomId_parentNode = e.target.parentNode;
+            let roomId = roomId_parentNode.innerText
+              .replace(/\n/g, " ")
+              .split(" ")[0];
+
+            socket.emit("join-room", roomId, socket.id);
+          }
+          newEle_button.onclick = button_onClick;
           rooms_list.appendChild(newEle);
           newEle.appendChild(newEle_button);
         });
