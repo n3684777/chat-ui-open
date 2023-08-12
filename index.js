@@ -67,7 +67,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("create-room", (roomId, userId) => {
-    if (io.sockets.adapter.rooms.get(roomId)) {
+    let _tempRoomId = roomId.replace(/ /g, "");
+    if (io.sockets.adapter.rooms.get(_tempRoomId)) {
       console.log(socket.id);
 
       console.log("error: room already exists");
@@ -78,27 +79,27 @@ io.on("connection", (socket) => {
       socket.emit("roomId-cant-empty", "房間名稱不能為空");
       return;
     }
-    let _tempMsg = roomId.replace(/ /g, "");
-    console.log(_tempMsg);
+
+    console.log(_tempRoomId);
     /* 當創建房間後，不可再創建房間（判別方式：userId為socket.id) */
 
     for (let i = 0; i < userData.length; i++) {
-      if (userData[i].userId === userId && userData[i]._tempMsg) {
+      if (userData[i].userId === userId && userData[i]._tempRoomId) {
         socket.emit("cant-create-room", "進入房間後，不可創建房間");
         return;
       }
     }
 
     console.log("已創建房間成功");
-    socket.join(_tempMsg);
+    socket.join(_tempRoomId);
 
     for (let i = 0; i < userData.length; i++) {
       if (userData[i].userId === userId) {
-        userData[i].roomId = _tempMsg;
+        userData[i].roomId = _tempRoomId;
       }
     }
 
-    socket.emit("room-created", _tempMsg, userId);
+    socket.emit("room-created", _tempRoomId, userId);
   });
 
   socket.on("join-room", (roomId, userId) => {
