@@ -106,7 +106,7 @@ io.on("connection", (socket) => {
     }
     for (let i = 0; i < userData.length; i++) {
       if (userData[i].userId === userId && userData[i].roomId) {
-        socket.emit("cant-create-room", "進入房間後，不可創建房間");
+        socket.emit("cant-create-room", "進入房間後，不可創建或者進入房間");
         return;
       }
     }
