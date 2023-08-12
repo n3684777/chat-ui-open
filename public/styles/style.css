@@ -11,6 +11,8 @@ body {
   font-size: 16px;
   font-family: "微軟正黑體", "arial";
   font-weight: 600;
+  color: black;
+  background-color: white;
 }
 
 a {
@@ -55,8 +57,11 @@ p {
   padding-top: 100px;
 }
 
-.online-person {
-  height: 400px;
+/* online people */
+.online-people {
+  height: 200px;
+  overflow-x: visible;
+  white-space: nowrap;
 }
 
 /* title */
@@ -100,6 +105,22 @@ p {
 /* chatBox */
 .chat-box {
   height: 200px;
+}
+
+.room-people {
+  text-align: start;
+  white-space: nowrap;
+  height: 200px;
+  overflow: auto;
+}
+
+/* room list */
+.rooms-title {
+  text-align: center;
+}
+
+.rooms-list {
+  text-align: center;
 }
 
 /* btn */

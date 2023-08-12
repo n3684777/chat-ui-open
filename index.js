@@ -56,30 +56,46 @@ io.on("connection", (socket) => {
   socket.on("send-msg", (msg, userId, roomId, nickname) => {
     let room = io.sockets.adapter.rooms.get(roomId);
     console.log(room);
+    console.log(msg);
     if (!room) {
-      socket.emit("room-not-found", "需要加入房間，才能使用聊天功能。");
+      socket.emit("need-join-room", "需要加入房間，才能使用聊天功能。");
+      return;
+    } else if (msg === "") {
+      return;
     }
     io.to(roomId).emit("sent-msg", msg, userId, nickname);
   });
 
   socket.on("create-room", (roomId, userId) => {
     if (io.sockets.adapter.rooms.get(roomId)) {
-      console.log(roomId);
       console.log(socket.id);
 
       console.log("error: room already exists");
       socket.emit("room-already-exists", "房間名稱已被占用");
       return;
     }
+    if (roomId == "") {
+      socket.emit("roomId-cant-empty", "房間名稱不能為空");
+      return;
+    }
+    /* 當創建房間後，不可再創建房間（判別方式：userId為socket.id) */
+
+    for (let i = 0; i < userData.length; i++) {
+      if (userData[i].userId === userId && userData[i].roomId) {
+        socket.emit("cant-create-room", "進入房間後，不可創建房間");
+        return;
+      }
+    }
+
     console.log("已創建房間成功");
     socket.join(roomId);
 
     for (let i = 0; i < userData.length; i++) {
       if (userData[i].userId === userId) {
         userData[i].roomId = roomId;
-        break;
       }
     }
+
     socket.emit("room-created", roomId, userId);
   });
 
@@ -107,11 +123,17 @@ io.on("connection", (socket) => {
       return;
     }
     socket.leave(roomId);
+    for (let i = 0; i < userData.length; i++) {
+      if (userData[i].userId === userId) {
+        delete userData[i].roomId;
+      }
+    }
 
     socket.emit("leaved-room");
   });
 
   socket.on("get-online-people", () => {
+    console.log(userData);
     socket.emit("got-online-people", userData);
   });
   socket.on("error", (error) => {
@@ -119,20 +141,24 @@ io.on("connection", (socket) => {
   });
 
   socket.on("get-room-people", (roomId) => {
-    console.log("-----room-people-----");
+    // console.log("-----room-people-----");
     let room_data = [];
     let room_people = io.sockets.adapter.rooms.get(roomId);
     if (!room_people) {
       return;
     } else {
-      console.log(userData);
+      // console.log(userData);
       room_people.forEach((userId) => {
         room_data.push(userId);
       });
 
-      socket.emit("got-room-people", room_data);
+      socket.emit("got-room-people", userData, roomId);
     }
-    console.log("-----room-people-----");
+    // console.log("-----room-people-----");
+  });
+
+  socket.on("get-current-rooms", () => {
+    socket.emit("got-current-rooms", userData);
   });
 
   socket.on("disconnect", () => {

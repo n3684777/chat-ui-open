@@ -11,6 +11,8 @@ body {
   font-size: 16px;
   font-family: "微軟正黑體", "arial";
   font-weight: 600;
+  color: black;
+  background-color: white;
 }
 
 a {
@@ -62,8 +64,14 @@ $msg__box-height: 400px;
 $msg__chat-height: 200px;
 $msg__system-height: calc($msg__box-height - $msg__chat-height);
 
-.online-person {
-  height: $msg__box-height;
+/* online people */
+.online-people {
+  // border: 1px solid black;
+  height: $msg__chat-height;
+  overflow-x: visible;
+
+  // height: $msg__box-height;
+  white-space: nowrap;
 }
 
 /* title */
@@ -113,7 +121,29 @@ $msg__system-height: calc($msg__box-height - $msg__chat-height);
 
 .chat-box {
   height: $msg__chat-height;
-  // background-color: green;
+}
+
+// room people
+
+.room-people-box {
+  // display: flex;
+  // justify-content: start;
+}
+.room-people {
+  text-align: start;
+  white-space: nowrap;
+  height: $msg__chat-height;
+  overflow: auto;
+  // overflow-y: auto;
+}
+
+/* room list */
+.rooms-title {
+  text-align: center;
+}
+
+.rooms-list {
+  text-align: center;
 }
 
 /* btn */

@@ -53,6 +53,8 @@
           <button type="submit" onclick="send()">送出</button>
         </form>
       </div>
+      <h1 class="rooms-title">房間</h1>
+      <div class="rooms-list row"></div>
     </div>
 
     <script>
@@ -83,9 +85,9 @@
       });
 
       socket.on("got-online-people", function (userData) {
-        console.log("---------got---------");
-        console.log(userData);
-        console.log("---------got---------");
+        // console.log("---------got---------");
+        // console.log(userData);
+        // console.log("---------got---------");
         let online_people = document.querySelector(".online-people");
         let nickname = document.querySelector(".nickname").innerText;
         while (online_people.firstChild) {
@@ -101,15 +103,23 @@
         }
       });
 
-      socket.on("got-room-people", function (room_data) {
+      socket.on("got-room-people", function (userData, roomId) {
         let room_people = document.querySelector(".room-people");
         while (room_people.firstChild) {
           room_people.removeChild(room_people.firstChild);
         }
-
-        for (let i = 0; i < room_data.length; i++) {
+        let findUserData = userData.filter((value) => value.roomId == roomId);
+        // console.log(findUserData);
+        for (let i = 0; i < findUserData.length; i++) {
           let newEle = document.createElement("p");
-          newEle.innerText = room_data[i].substr(0, 5);
+          newEle.innerText =
+            findUserData[i].userId.substr(0, 5) +
+            " (" +
+            findUserData[i].nickname +
+            ")";
+          // console.log(newEle.innerText);
+          // console.log(userData[i].userId);
+          // console.log(userData[i].nickname);
           room_people.appendChild(newEle);
         }
       });
@@ -122,7 +132,11 @@
 
       socket.on("leaved-room", function () {
         let current_roomId = document.querySelector(".current-roomId");
+        let room_people = document.querySelector(".room-people");
         current_roomId.innerText = "";
+        while (room_people.firstChild) {
+          room_people.removeChild(room_people.firstChild);
+        }
       });
 
       socket.on("room-not-found", function (roomId) {
@@ -130,16 +144,64 @@
         appendSystemMsg('沒有"' + roomId + '"此房間');
       });
 
+      socket.on("need-join-room", function (reason) {
+        appendSystemMsg(reason);
+      });
+
       socket.on("not-leave-room", function (reason) {
         appendSystemMsg(reason);
       });
 
+      socket.on("roomId-cant-empty", function (reason) {
+        appendSystemMsg(reason);
+      });
+
+      socket.on("cant-create-room", function (reason) {
+        appendSystemMsg(reason);
+      });
+
       socket.on("sent-msg", function (msg, userId, nickname) {
+        let input_msg = document.querySelector(".input-msg");
+
         appendSystemMsg(
           nickname + "(" + userId.substr(0, 5) + ") says : " + msg
         );
+        input_msg.value = "";
       });
 
+      socket.on("got-current-rooms", function (userData) {
+        let rooms_list = document.querySelector(".rooms-list");
+        let _temp = new Set();
+        while (rooms_list.firstChild) {
+          rooms_list.removeChild(rooms_list.firstChild);
+        }
+
+        for (let i = 0; i < userData.length; i++) {
+          if (!userData[i].roomId) {
+            continue;
+          }
+          _temp.add(userData[i].roomId);
+          // newEle.innerText = userData[i].roomId;
+          // console.log(newEle.innerText);
+          // rooms_list.appendChild(newEle);
+        }
+
+        _temp.forEach((_roomId) => {
+          console.log(_roomId);
+          let newEle = document.createElement("p");
+          let newEle_button = document.createElement("button");
+          newEle.innerText = _roomId;
+          newEle.className = "col-4";
+          newEle.style.height = "50px";
+          newEle.style.border = "1px solid black";
+          newEle.style.display = "flex";
+          newEle.style.justifyContent = "center";
+          newEle.style.alignItems = "center";
+          newEle_button.innerText = "加入房間";
+          rooms_list.appendChild(newEle);
+          newEle.appendChild(newEle_button);
+        });
+      });
       /* -------------------- *\
           Utility functions
       \* -------------------- */
@@ -147,8 +209,11 @@
       function appendSystemMsg(msg) {
         const systemMsg = document.querySelector(".system-msg");
         const newMsg = document.createElement("p");
+        let system_msg = document.querySelector(".system-msg");
+
         newMsg.innerText = msg;
         systemMsg.appendChild(newMsg);
+        systemMsg.scrollTop = systemMsg.scrollHeight;
       }
 
       function create_room() {
@@ -188,12 +253,17 @@
         socket.emit("get-online-people");
       }
 
+      function get_current_rooms() {
+        socket.emit("get-current-rooms");
+      }
+
       function room_people() {
         let current_roomId =
           document.querySelector(".current-roomId").innerText;
         socket.emit("get-room-people", current_roomId);
       }
       /* 暫時用setInterval useEffect */
+      setInterval(get_current_rooms, 1000);
       setInterval(online_name, 5000);
       setInterval(room_people, 1000);
     </script>
