@@ -78,25 +78,27 @@ io.on("connection", (socket) => {
       socket.emit("roomId-cant-empty", "房間名稱不能為空");
       return;
     }
+    let _tempMsg = roomId.replace(/ /g, "");
+    console.log(_tempMsg);
     /* 當創建房間後，不可再創建房間（判別方式：userId為socket.id) */
 
     for (let i = 0; i < userData.length; i++) {
-      if (userData[i].userId === userId && userData[i].roomId) {
+      if (userData[i].userId === userId && userData[i]._tempMsg) {
         socket.emit("cant-create-room", "進入房間後，不可創建房間");
         return;
       }
     }
 
     console.log("已創建房間成功");
-    socket.join(roomId);
+    socket.join(_tempMsg);
 
     for (let i = 0; i < userData.length; i++) {
       if (userData[i].userId === userId) {
-        userData[i].roomId = roomId;
+        userData[i].roomId = _tempMsg;
       }
     }
 
-    socket.emit("room-created", roomId, userId);
+    socket.emit("room-created", _tempMsg, userId);
   });
 
   socket.on("join-room", (roomId, userId) => {
